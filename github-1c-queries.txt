@@ -1,3 +1,6 @@
+Разные материалы по запросам 1С
+https://infostart.ru/1c/articles/204054/
+
 // JOINS
 
 //---- ГОРОДА
@@ -233,6 +236,88 @@
 			Подразделение
 	) 
 
+в MSSQL такой фичи нет: (Компания.Зарплата, Компания.Подразделение) В
+там будут ошибки
+1 если выбрать 2 и более полей в подзапросе, например так:
+(
+		select 
+			max(Зарплата) as МаксЗарплата,
+			Подразделение
+ошибка будет такая:
+Only one expression can be specified in the select list when the subquery is not introduced with EXISTS.
+2 если указать 2 поля перед оператором IN
+(company.Зарплата, company.Подразделение) in
+то будет ошибка
+An expression of non-boolean type specified in a context where a condition is expected, near ','.
+
+Пример с зарплатой для MSSQL 
+
+USE master;
+
+DROP TABLE IF EXISTS dbo.company;
+
+Create table dbo.company (
+[Зарплата] integer
+,[Должность] nvarchar(250)
+,[Подразделение] nvarchar(250)
+);
+
+insert into company
+SELECT 
+	1000 as Зарплата
+	,'Кассир' as Должность
+	,'Магазин' as Подразделение
+
+union all
+SELECT
+	2000 as Зарплата
+	,'Кладовщик' as Должность
+	,'Магазин' as Подразделение
+union all
+SELECT
+	2000 as Зарплата
+	,'Водитель погрузчика' as Должность
+	,'Магазин' as Подразделение
+union all
+SELECT
+	4000 as Зарплата
+	,'Директор' as Должность
+	,'Магазин' as Подразделение
+
+union all
+SELECT
+	5000 as Зарплата
+	,'Менеджер по продажам' as Должность
+	,'Оптовый отдел' as Подразделение
+union all
+SELECT
+	6000 as Зарплата
+	,'Руководитель отдела' as Должность
+	,'Оптовый отдел' as Подразделение
+union all
+SELECT
+	6000 as Зарплата
+	,'Программист' as Должность
+	,'Оптовый отдел' as Подразделение
+;
+
+select
+	company.Должность,
+	company.Подразделение,
+	company.Зарплата
+from
+	dbo.company as company
+where
+	company.Зарплата in
+	(
+		select 
+			max(Зарплата) as МаксЗарплата
+		from
+			company
+		group by
+			Подразделение
+		having Подразделение = company.Подразделение
+	) 
 
 
-	
+

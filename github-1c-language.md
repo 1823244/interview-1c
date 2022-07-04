@@ -18,22 +18,22 @@
 * Дерево значений
 
 Ссылки  
-[https://infostart.ru/1c/articles/368456/](https://infostart.ru/1c/articles/368456/)
-[https://infostart.ru/1c/articles/79285/](https://infostart.ru/1c/articles/79285/)
-[https://infostart.ru/public/105104/](https://infostart.ru/public/105104/)
-[]()
-[]()
-
-
-
-
+[https://infostart.ru/1c/articles/368456/](https://infostart.ru/1c/articles/368456/)  
+[https://infostart.ru/1c/articles/79285/](https://infostart.ru/1c/articles/79285/)  
+[https://infostart.ru/public/105104/](https://infostart.ru/public/105104/)  
+[https://infostart.ru/1c/articles/116404/](https://infostart.ru/1c/articles/116404/)  
+[https://infostart.ru/public/142517/](https://infostart.ru/public/142517/)  
 
 
 3. Запись кода в одну строку
 
 Интерпретатор 1С тратит много времени на работу с номером строки в байткоде (LineNum).  
-Подробнее об этом - у Овсянкина.  [https://habr.com/ru/post/489392/](https://habr.com/ru/post/489392/)
-Поэтому, цикл на много итераций, 1000 и более, будет сильно быстрее, если записть его в одну строку.  
+Подробнее об этом - у Овсянкина.  [https://habr.com/ru/post/489392/](https://habr.com/ru/post/489392/)  
+Поэтому, цикл на много итераций, 1000 и более, будет сильно быстрее, если записать его в одну строку.  
 
-4.
+4. Разыменование полей объектов
+
+Работа через точку в коде. Можно, если это не массово.  
+Тысячи обращений лучше переделывать на один запрос.  
+
 5.

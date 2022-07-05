@@ -109,7 +109,7 @@ https://infostart.ru/1c/articles/204054/
     , *
 ИЗ
 	Города 
-	LEFT JOIN Офисы
+	RIGHT JOIN Офисы
 	ON ЛОЖЬ
 ;
 
@@ -152,6 +152,181 @@ https://infostart.ru/1c/articles/204054/
 	FULL JOIN Офисы
 	ON Офисы.Город = Города.ИД
 ;
+
+
+---------------------------- города и офисы на MSSQL
+USE master;
+
+DROP TABLE IF EXISTS cities;
+DROP TABLE IF EXISTS offices;
+
+create table cities(
+id int not null
+,name nvarchar(200)
+);
+create table offices(
+id int not null
+,name nvarchar(200)
+,city int
+);
+
+---- cities
+insert into cities
+select
+	1 as id
+	,'Москва' as name
+
+union all
+select
+	2 as ИД
+	,'Лондон' as Имя
+union all
+select
+	3 as ИД
+	,'Сингапур' as Имя
+union all
+select
+	4 as ИД
+	,'Сидней' as Имя
+;
+
+---- offices
+insert into offices (id, city, name)
+select
+	1 as id
+	,1 as city
+	,'ОфисМосква1' as bane
+
+union all
+select
+	2 as ИД
+	,1 as Город
+	,'ОфисМосква2' as Имя
+union all
+select
+	3 as ИД
+	,2 as Город
+	,'ОфисЛондон' as Имя
+union all
+select
+	4 as ИД
+	,5 as Город
+	,'ОфисБангкок' as Имя
+;
+
+--------------  ВЫБОРКА
+select
+	'Все cities', *
+from
+	cities
+;
+select
+	'Все offices', *
+from
+	offices
+
+;
+
+select
+	'CROSS-JOIN. Строк = 16. Декартово произведение'
+    , *
+from
+	cities , offices
+;
+select
+	'CROSS-JOIN. Строк = 16. Декартово произведение'
+    , *
+from
+	cities cross join offices
+;
+select
+	'LEFT-JOIN по Истине, фактически аналог CROSS-JOIN. Строк = 16. Декартово проfromведение'
+    , *
+from
+	cities 
+	LEFT JOIN offices
+	ON 1=1
+;
+
+select
+	'RIGHT-JOIN по Истине, фактически аналог CROSS-JOIN. Строк = 16. Декартово проfromведение'
+    , *
+from
+	cities 
+	RIGHT JOIN offices
+	ON 1=1
+;
+ 
+select
+	'FULL-JOIN по Истине, фактически аналог CROSS-JOIN. Строк = 16. Декартово проfromведение'
+    , *
+from
+	cities 
+	FULL JOIN offices
+	ON 1=1
+;
+
+ 
+select
+	'LEFT-JOIN по ЛОЖЬ, Строк = 4. Все from городов, ничего from офисов'
+    , *
+from
+	cities 
+	LEFT JOIN offices
+	ON 1=0
+;
+
+ 
+select
+	'RIGHT-JOIN по ЛОЖЬ, Строк = 4. Все from офисов, ничего from городов'
+    , *
+from
+	cities 
+	RIGHT JOIN offices
+	ON 1=0
+;
+
+ 
+select
+	'FULL-JOIN по ЛОЖЬ, Строк = 8. Все from офисов, все from городов, но не пересекаются'
+    , *
+from
+	cities 
+	FULL JOIN offices
+	ON 1=0
+;
+
+ 
+select
+	'LEFT-JOIN. Строк = 5. Всё from Городов (Москва 2 раза), только совпадения from Офисов'
+    , *
+from
+	cities 
+	LEFT JOIN offices
+	ON offices.city = cities.id
+;
+
+ 
+select
+	'RIGHT-JOIN. Строк = 4. Всё from Офисов, только совпадения from Городов, Москва 2 раза'
+    , *
+from
+	cities 
+	RIGHT JOIN offices
+	ON offices.city = cities.id
+;
+ --FULL-JOIN. Строк = 6. Всё from Офисов, всё Городов
+ --для Москвы - 2 строки, т.к. 2 офиса
+select
+	'FULL-JOIN. Строк = 6. Всё from Офисов, всё Городов, Москва 2 раза'
+    , *
+from
+	cities 
+	FULL JOIN offices
+	ON offices.city = cities.id
+;
+
+
 
 // AGGREGATES
 
@@ -372,3 +547,65 @@ EXISTS(
     GROUP BY <Список группировки>
     HAVING (<Условие 2>) AND <Выражение 1> = <Колонка 1> AND ... AND <Выражение N> = <Колонка N>
 )
+
+Удаление дублей в 1С
+Удаление дублей в MSSQL
+
+USE master;
+
+DROP TABLE IF EXISTS dbo.banks;
+
+create table banks (
+	id int not null
+	, name nvarchar(200)
+);
+insert into banks (id, name) values (1, 'JP Morgan'),
+(2, 'Deutsche bank'), (3, 'HSBC'), (4, 'Deutsche bank'),
+(5, 'UBS')
+;
+
+--вариант через IN
+delete from 
+	banks 
+where 
+	id in (
+			select 
+				b1.id 
+			from 
+				banks b1
+				left join banks b2
+				on b2.name = b1.name
+			where 
+				b1.id > b2.id)
+;
+--вариант через EXISTS
+delete b1 from banks as b1
+where 
+	exists (
+		select 
+			1 
+		from 
+			banks as b2 
+		where 
+			b2.name = b1.name 
+			and b2.id < b1.id
+)
+--вариант через CTE и ROW_NUMBER
+--https://ru.stackoverflow.com/questions/607555/%D0%A3%D0%B4%D0%B0%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5-%D0%B4%D1%83%D0%B1%D0%BB%D0%B8%D0%BA%D0%B0%D1%82%D0%BE%D0%B2-%D1%81%D1%82%D1%80%D0%BE%D0%BA-%D0%B2-mssql
+with cte as (
+	select
+		rn = ROW_NUMBER() over (PARTITION BY name order by name)
+		--,name -- это для проверки
+	from
+		banks
+)
+delete from cte where rn > 1
+--select * from cte --это для проверки
+;
+
+
+
+
+
+Выборка "пакетами" в запросе
+Задача: необходимо выбрать какой-то объем данных небольшими порциями именно в запросе.

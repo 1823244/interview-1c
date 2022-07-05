@@ -602,6 +602,22 @@ with cte as (
 delete from cte where rn > 1
 --select * from cte --это для проверки
 ;
+--вариант через group by
+--select * --для проверки
+delete b1
+from banks as b1
+inner join (
+	select 
+		MIN (ID) as firstID
+		,name
+	from
+		banks 
+	group by
+		name
+	having count(*) > 1
+) as dup
+ON dup.name = b1.name
+WHERE b1.id > dup.firstID
 
 
 

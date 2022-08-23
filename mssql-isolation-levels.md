@@ -1,3 +1,6 @@
+https://docs.microsoft.com/en-us/sql/relational-databases/sql-server-transaction-locking-and-row-versioning-guide?view=sql-server-ver16  
+
+
 # Isolation levels
 
 there are 6 isolation levels  
